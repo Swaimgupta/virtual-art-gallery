@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -23,7 +24,7 @@ export default function Signup() {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       });
