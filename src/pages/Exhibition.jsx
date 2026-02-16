@@ -28,14 +28,28 @@ function Exhibition() {
     loadArtworks();
   }, []);
 
+  // ✅ LIVE CHECK (SAFE & RELIABLE)
+  const isLive = (art) => {
+    if (!art.exhibition_start || !art.exhibition_end) return false;
+
+    const now = new Date();
+    return (
+      now >= new Date(art.exhibition_start) &&
+      now <= new Date(art.exhibition_end)
+    );
+  };
+
   if (loading) {
     return <h2 style={{ textAlign: "center" }}>Loading Exhibition…</h2>;
   }
 
-  if (artworks.length === 0) {
+  // ✅ SHOW ONLY LIVE EXHIBITIONS
+  const liveArtworks = artworks.filter(isLive);
+
+  if (liveArtworks.length === 0) {
     return (
       <h2 style={{ textAlign: "center" }}>
-        No exhibitions yet 🎭
+        No active exhibitions 🎭
       </h2>
     );
   }
@@ -45,20 +59,23 @@ function Exhibition() {
       <h1 style={{ marginBottom: 30 }}>Exhibition 🎨</h1>
 
       <div style={grid}>
-        {artworks.map((art) => (
+        {liveArtworks.map((art) => (
           <div
             key={art.id}
             style={card}
             onClick={() =>
-              // ✅ FIX: pass BOTH params
-              navigate(`/exhibition/${art.user_id}/${art.id}`)
+              navigate(`/exhibition/${art.user_id || art.artist_id}/${art.id}`)
             }
           >
-            <img
-              src={art.image_url}
-              alt={art.title}
-              style={image}
-            />
+            <div style={{ position: "relative" }}>
+              <span style={liveBadge}>LIVE</span>
+
+              <img
+                src={art.image_url}
+                alt={art.title}
+                style={image}
+              />
+            </div>
 
             <div style={content}>
               <h3>{art.title}</h3>
@@ -110,4 +127,17 @@ const content = {
 const desc = {
   fontSize: "13px",
   color: "#555",
+};
+
+const liveBadge = {
+  position: "absolute",
+  top: "10px",
+  left: "10px",
+  background: "#16a34a",
+  color: "#fff",
+  padding: "6px 12px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "bold",
+  zIndex: 10,
 };

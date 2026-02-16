@@ -12,6 +12,10 @@ function Upload() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // ✅ NEW (minimal)
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   // get logged-in user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -29,6 +33,12 @@ function Upload() {
 
     if (!file || !title || !description) {
       alert("All fields required");
+      return;
+    }
+
+    // ✅ NEW validation (only for exhibition)
+    if (type === "exhibition" && (!startDate || !endDate)) {
+      alert("Please select exhibition start and end time");
       return;
     }
 
@@ -67,7 +77,7 @@ function Upload() {
         navigate("/gallery");
       }
 
-      /* ---------- EXHIBITION ---------- */
+      /* ---------- EXHIBITION (LIMITED TIME) ---------- */
       if (type === "exhibition") {
         const { error } = await supabase.from("artworks").insert({
           title,
@@ -75,6 +85,8 @@ function Upload() {
           image_url: imageUrl,
           image_path: filePath,
           user_id: user.id,
+          exhibition_start: startDate,
+          exhibition_end: endDate,
         });
 
         if (error) throw error;
@@ -116,6 +128,25 @@ function Upload() {
           onChange={(e) => setDescription(e.target.value)}
           style={input}
         />
+
+        {/* ✅ NEW: Show only for exhibition */}
+        {type === "exhibition" && (
+          <>
+            <input
+              type="datetime-local"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              style={input}
+            />
+
+            <input
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              style={input}
+            />
+          </>
+        )}
 
         <input
           type="file"

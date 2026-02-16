@@ -17,19 +17,43 @@ function PaintingDetail() {
         .eq("id", id)
         .single();
 
-      if (!error) setPainting(data);
+      if (error || !data) {
+        setPainting(null);
+        setLoading(false);
+        return;
+      }
+
+      // ⏰ Limited-time exhibition check (SAFE ADDITION)
+      const now = new Date();
+
+      if (data.exhibition_start && data.exhibition_end) {
+        const start = new Date(data.exhibition_start);
+        const end = new Date(data.exhibition_end);
+
+        if (now < start || now > end) {
+          setPainting(null);
+          setLoading(false);
+          return;
+        }
+      }
+
+      setPainting(data);
       setLoading(false);
     };
 
     loadPainting();
   }, [id]);
 
+  // ✅ RETURN JSX (THIS WAS MISSING)
   if (loading) return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
-  if (!painting) return <h2 style={{ textAlign: "center" }}>Not found</h2>;
+  if (!painting)
+    return <h2 style={{ textAlign: "center" }}>Exhibition not available</h2>;
 
   return (
     <div style={page}>
-      <button onClick={() => navigate(-1)} style={backBtn}>← Back</button>
+      <button onClick={() => navigate(-1)} style={backBtn}>
+        ← Back
+      </button>
 
       <img
         src={painting.image_url}
